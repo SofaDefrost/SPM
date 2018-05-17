@@ -23,15 +23,30 @@ The Sofa Package Manager
 
 When you have found the plugin you want to install you can simply ask for as in:
 ```console
-dmarchal@dmarchal-Precision-7520:~/projects/DEFROST/dev/spm/test$ ../src/spm.py search CableActutor
+dmarchal@dmarchal-Precision-7520:~/projects/DEFROST/dev/spm/test$ ../src/spm.py install SofaQtQuick SoftRobots.Inverse 
 The Sofa Package Manager
-- searching for 'CableActutor' in 7 plugins descriptions. No exact match...but I found:
-  CableActuator                    (get details by typing: 'spm search CableActuator')
+- instal list is ['SofaQtQuick', 'STLIB', 'SoftRobots', 'SoftRobots.Inverse']
+ - installing 'SofaQtQuick' (destination path ./)
+   cloning from: git@github.com:sofa-framework/SofaQtQuick.git
+Repository: ./SofaQtQuick skipped, already registered
+ - installing 'STLIB' (destination path ./)
+   cloning from: git@github.com:SofaDefrost/STLIB.git
+Repository: ./STLIB skipped, already registered
+ - installing 'SoftRobots' (destination path ./)
+   cloning from: git@github.com:SofaDefrost/SoftRobots.git
+Repository: ./SoftRobots skipped, already registered
+ - installing 'SoftRobots.Inverse' (destination path ./)
+   cloning from: git@github.com:SofaDefrost/SoftRobots.git
+Repository: ./SoftRobots.Inverse skipped, already registered
+ - building CMakeLists.txt for: ./
+ - scanning directory ./ for plugins.
+ - scanning directory ./ for plugins to generate mu-repo.
 ```
 spm will install them as well as all their dependencies from their git official repository, 
 configure the official repositories as "upstream" remote and generates a dependency friendly ordered 
 CMakeLists.txt for direct integration in you SOFA_EXTERNAL_PLUGINS_DIRECTORY. 
-spm will also configure mu-repo () so that it contains the plugins repositories. 
+spm will also configure mu-repo (http://fabioz.github.io/mu-repo/) so that it is already configure to handle all the 
+plugins repositories. 
 
 ## How to contribute & TODO
 - Reports problems,
