@@ -3,7 +3,7 @@ If like me your are tired of searching which Sofa component is in which plugin a
 plugin is available and of cloning manually a lot of git repository maybe you should try SPM .
 SPM is a small tool to search from plugins or components & install them (including their dependencies) with as few as possible steps.
 
-** DISCLAIMER: This software is in a very drafty state. Please don't use it unless you are willing to put you hand in the code. **
+** DISCLAIMER: This software is in a very drafty state. **
 
 To search for plugins that contains specific components you should try:
 ```console
