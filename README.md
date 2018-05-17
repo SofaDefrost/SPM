@@ -1,5 +1,7 @@
-## SPM: Sofa Package Manager.
+This software is in a very drafty state. 
+Please don't use it unless you are willing to put you hand in the code. 
 
+## SPM: Sofa Package Manager.
 If like me your are tired of searching which Sofa component is in which plugin and where this 
 plugin is available... install SPM and enjoy the following nice features:
 
