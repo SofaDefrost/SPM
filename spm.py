@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+# Contributors: damien.marchal@univ-lille.fr
+# Copyright CNRS 2018
 import os
 import re
 import sys
