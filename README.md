@@ -1,11 +1,39 @@
 ## SPM: Sofa Package Manager.
 If like me your are tired of searching which Sofa component is in which plugin and where this 
 plugin is available and of cloning manually a lot of git repository maybe you should try SPM .
-SPM is a small tool to search from plugins or components & install them (including their dependencies) with as few as possible steps.
+SPM is a small tool to search from plugins or components & install them (including their dependencies) 
+with as few as possible steps. 
 
-** DISCLAIMER: This software is in a very drafty state. **
+### Install
+Before using spm you first install two python dependencies:
+```console
+   pip install GitPython
+   pip install mu-repo
+```
+You also need to have configured your gitlab/github account to authenticate with ssh key.
 
-To search for plugins that contains specific components you should try:
+### Usage
+To get a list of the available plugins you can try:
+```console
+dmarchal@dmarchal-Precision-7520:~/projects/DEFROST/dev/spm/test$ ../src/spm.py list
+ Defrost:
+      ModelOrderReduction.sp
+      SoftRobots.Inverse.sp
+      STLIB.sp
+      DefrostAllPlugins.sp
+      BeamAdapter.sp
+      SoftRobots.sp
+      sofa-shells.sp
+  Consortium:
+      HighOrder.sp
+      SofaQtQuick.sp
+  Mimesis:
+      DepthSense.sp
+      Meshless.sp
+      SofaOR.sp
+```
+
+To search for a specific plugins which contains specific components you could try:
 ```console
 dmarchal@dmarchal-Precision-7520:~/projects/DEFROST/dev/spm/test$ ../src/spm.py search CableActuator
 The Sofa Package Manager
@@ -13,7 +41,7 @@ The Sofa Package Manager
   SoftRobots                      A plugin dedicated to SoftRobotics.
 ```
 
-If not match are found, an approximated search is done which should provide you suggestions as in:
+If not matches are found, an approximated search is done which should provide you suggestions as in:
 ```console
 dmarchal@dmarchal-Precision-7520:~/projects/DEFROST/dev/spm/test$ ../src/spm.py search CableActutor
 The Sofa Package Manager
@@ -21,7 +49,7 @@ The Sofa Package Manager
   CableActuator                    (get details by typing: 'spm search CableActuator')
 ```
 
-If you want o install one or multiple plugins you can do as in:
+Finally, when you have found the plugins you want to install you can type:
 ```console
 dmarchal@dmarchal-Precision-7520:~/projects/DEFROST/dev/spm/test$ ../src/spm.py install SofaQtQuick SoftRobots.Inverse 
 The Sofa Package Manager
