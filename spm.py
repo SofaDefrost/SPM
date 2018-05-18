@@ -159,7 +159,12 @@ def computeDependencies(name, alreadyProcessed=[]):
 def infoFor(query):
         print("Info for: "+query)
         if query in os.listdir(dbpath):
-                print("   "+query+" is a package source. (spm list mimesis to get the list of plugin in this source.")
+                print("   "+query+" is a package source. (spm list "+query+" to get the list of plugin in this source).")
+                return
+        
+        desc = loadPluginDesc(dbpath, query)
+        if desc != None:
+                print("    "+query+" is "+desc["description"]+". To install this plugin you can type 'spm install "+query+"'")
 
 def searchFor(query):
         pluginsEntries = loadPluginsEntries(dbpath)
