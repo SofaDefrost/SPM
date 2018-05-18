@@ -8,6 +8,7 @@ import sys
 import json
 import shutil
 import difflib
+import textwrap
 import subprocess
 from git import Repo
 
@@ -34,23 +35,26 @@ def searchInPluginsEntries(pluginsname, query):
         closematches = []
         allwords = []
         for (name, path) in pluginsname:
-                plugin = json.loads(open(path).read())
+                try:
+                        plugin = json.loads(open(path).read())
+                except:
+                        print("Unable to process package: "+str(path))
+                else:        
+                        if re.search(query, plugin["package_name"]):
+                                matches.append((name, path, plugin))               
+                        elif re.search(query, plugin["description"]):
+                                matches.append((name, path, plugin))               
+                        elif re.search(query, str(plugin["components"])):
+                                matches.append((name, path, plugin))               
+                        elif re.search(query, str(plugin["prefabs"])):
+                                matches.append((name, path, plugin))      
                 
-                if re.search(query, plugin["package_name"]):
-                        matches.append((name, path, plugin))               
-                elif re.search(query, plugin["description"]):
-                        matches.append((name, path, plugin))               
-                elif re.search(query, str(plugin["components"])):
-                        matches.append((name, path, plugin))               
-                elif re.search(query, str(plugin["prefabs"])):
-                        matches.append((name, path, plugin))      
-                
-                if len(matches) == 0:
-                        allwords.append(plugin["package_name"])
-                        allwords = allwords + plugin["components"]
-                        allwords = allwords + plugin["prefabs"]
-                else:
-                        allwords = []
+                        if len(matches) == 0:
+                             allwords.append(plugin["package_name"])
+                             allwords = allwords + plugin["components"]
+                             allwords = allwords + plugin["prefabs"]
+                        else:
+                             allwords = []
                 
         if len(matches) == 0:
                 ## Do a close search...         
@@ -111,9 +115,8 @@ def generateCMakeList(tgtpath="./"):
         absfile = os.path.join(tgtpath, "CMakeLists.txt")
         f = open(absfile,"w")
 
-        print("NOTSORTED LIST IS: "+str(pluginsWithDesc))        
         pluginsWithDesc = sortPlugins(pluginsWithDesc)
-        print("SORTED LIST IS: "+str(pluginsWithDesc))
+        print("Installed plugins: "+str(pluginsWithDesc))
         for plugin in pluginsWithDesc:
                 f.write("sofa_add_plugin({} {})\n".format(plugin, plugin))
      
@@ -141,8 +144,13 @@ def searchFor(query):
         (matches, closematches) = searchInPluginsEntries(pluginsEntries, query)
         if len(matches) != 0:
                 print("- searching for '"+query+"' in "+str(len(pluginsEntries))+" plugins descriptions. Found:")
+                
                 for (f, path, desc) in matches:
-                        print('  {:<30}  {:<}'.format(desc["package_name"], desc["description"]))
+                        wraps = textwrap.wrap(desc["description"], 80)
+                        print('  {:<30}  {:<30}'.format(desc["package_name"], wraps[0]))
+                        for extralines in wraps[1:]:
+                                print('  {:<30}  {:<30}'.format("", extralines))
+                                
         else:
                 print("- searching for '"+query+"' in "+str(len(pluginsEntries))+" plugins descriptions. No exact match...but I found:")
                 for value in closematches:

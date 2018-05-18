@@ -1,4 +1,5 @@
 import Sofa
+import softrobots
 
 if len(sys.argv) != 2 and len(sys.argv) != 3:
         print("USAGE: runSofa getcomponent.py --argv <YourPluginName> <PythonPart>")
@@ -17,6 +18,7 @@ def createScene(rootNode):
                         components[c] = c         
         print('"components" : '+str(components.keys()))
              
-        if pyplugin != None:                
+        if pyplugin != None:
+        
                 prefabs = {}                
                 print('"components" : '+str(components.keys()))
