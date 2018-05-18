@@ -57,7 +57,8 @@ def searchInPluginsEntries(pluginsname, query):
                              allwords = []
                 
         if len(matches) == 0:
-                ## Do a close search...         
+                ## Do a close search...  
+                allwords += getPluginSources(dbpath)
                 closematches = difflib.get_close_matches(query, allwords)
                                   
         return (matches, closematches)
@@ -82,6 +83,23 @@ def installPlugin(name, tgtpath="./"):
                 
         ## Register to mu-repo
         subprocess.call(["mu", "register", dstpath])
+
+def getPluginSources(dbpath):
+        return os.listdir(dbpath)
+
+def listPlugins(path, source=None):
+        if source == None:
+                for p in os.listdir(dbpath):
+                        print("  "+p+":")
+                        for j in os.listdir(os.path.join(dbpath, p)):
+                                print("      "+j)
+                return 
+        
+        print("  "+source+":")
+        for j in os.listdir(os.path.join(dbpath, source)):
+                print("      "+j)
+
+        
 
 def scanPluginsInDir(path):
         plugins = []
@@ -138,6 +156,11 @@ def computeDependencies(name, alreadyProcessed=[]):
                 deps.append(str(dep))                        
         return deps
 
+def infoFor(query):
+        print("Info for: "+query)
+        if query in os.listdir(dbpath):
+                print("   "+query+" is a package source. (spm list mimesis to get the list of plugin in this source.")
+
 def searchFor(query):
         pluginsEntries = loadPluginsEntries(dbpath)
  
@@ -154,7 +177,7 @@ def searchFor(query):
         else:
                 print("- searching for '"+query+"' in "+str(len(pluginsEntries))+" plugins descriptions. No exact match...but I found:")
                 for value in closematches:
-                        print("  {:<30}   (get details by typing: 'spm search {:<}')".format(value,value))
+                        print("  {:<30}   (get details by typing: 'spm info {:<}')".format(value,value))
               
 if len( sys.argv ) < 2:
         print("The Sofa Package Manager, invalid command line.")
@@ -164,7 +187,16 @@ if len( sys.argv ) < 2:
 if sys.argv[1] == "search":
         print("The Sofa Package Manager")
         searchFor(sys.argv[2])
-                        
+
+elif sys.argv[1] == "list":   
+        if len(sys.argv) == 2:
+                listPlugins(dbpath)
+        else:
+                listPlugins(dbpath, sys.argv[2])
+        
+elif sys.argv[1] == "info":   
+        infoFor(sys.argv[2])
+                     
 elif sys.argv[1] == "install":
         print("The Sofa Package Manager")
         names = sys.argv[2:]
