@@ -1,9 +1,9 @@
 {
 	"package_name" : "DefrostAllPlugins",
-	"package_dependencies" : ["MOR", "SofaImplicit", "SoftRobots.Inverse"],
+	"package_dependencies" : ["STLIB", "BeamAdapter","sofa-shells","ModelOrderReduction", "SofaImplicit", "SoftRobots.Inverse"],
 	"ssh-url" : "",
 	"http-url" : "",
-	"description" : "A plugin to rules them all",
+	"description" : "A  meta-packages to rules them all",
 	"components" : [],
 	"prefabs" : []
 }
