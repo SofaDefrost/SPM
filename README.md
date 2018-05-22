@@ -1,16 +1,19 @@
 ## SPM: Sofa Package Manager.
-Tired of installing Sofa plugin manually or locate which component is in which plugin ? Then try SPM .
+Tired of installing Sofa plugin manually or locate which component is in which plugin ? Try SPM.
+
 SPM is a small tool to search for plugins or components & install them with their dependencies  
 with as few as possible steps. 
 
+
 ### Install
-Before using spm you first install two python dependencies:
+SPM has two python dependencies you can install:
 ```console
    pip install GitPython
    pip install mu-repo
 ```
-Before using spm you also need to have configured your gitlab/github account to allow authentication with ssh key.
-When this is done you can then start using SPM.
+
+SPM also use ssh based authentication to the plugin respository so you need to have configured your ssh account on the
+relevant services (github.com/gitlab.inria.fr/etc...).
 
 ### Usage
 It is possible to get a list of the available plugins with the *list* command:
