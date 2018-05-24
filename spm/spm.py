@@ -113,7 +113,7 @@ def scanPluginsInDir(path):
                 if os.path.exists(os.path.join(dirname,"CMakeLists.txt")) and loadPluginDesc(dbpath, dirname) != None:
                         pluginsWithDesc.append(dirname)        
                 elif os.path.isdir(dirname):
-                        print("Cannot process "+dirname)        
+                        print("Probably not a SOFA plugin: "+dirname)        
         return (plugins, pluginsWithDesc)
                         
 def sortPlugins(plugins, alreadyProcessed=[]):
