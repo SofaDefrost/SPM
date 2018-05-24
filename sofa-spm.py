@@ -197,7 +197,7 @@ def searchFor(query):
               
 if len( sys.argv ) < 2:
         print("The Sofa Package Manager, invalid command line.")
-        print("USAGE: spm [search|install] name1 <name2> <name3>")
+        print("USAGE: spm [list|search|info|install|] name1 <name2> <name3>")
         sys.exit(0)
 
 if sys.argv[1] == "search":
