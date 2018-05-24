@@ -1,6 +1,6 @@
 from setuptools import setup
 
-setup(name='sofa_spm',
+setup(name='sofa-spm',
       version='1.0',
       description='A package manager for the simulation framework called Sofa (https://www.sofa-framework.org)',
       url='https://github.com/SofaDefrost/SPM',

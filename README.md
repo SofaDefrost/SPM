@@ -1,21 +1,20 @@
-## SPM: Sofa Package Manager.
-Tired of installing Sofa plugin manually or locate which component is in which plugin ? Try SPM.
+## sofa-spm: Sofa Package Manager.
+Tired of installing Sofa plugin manually or locate which component is in which plugin ? Try sofa-spm.
 
-SPM is a small tool to search for plugins or components & install them with their dependencies  
+sofa-spm is a small tool to search for plugins or components & install them with their dependencies  
 with as few as possible steps. 
 
 
 ### Install
-SPM has two python dependencies you can install:
+sofa-spm can now simply be installed using pip by typing
 ```console
-   pip install GitPython
-   pip install mu-repo
+   pip install sofa-spm
 ```
 
-SPM also use ssh based authentication to the plugin respository so you need to have configured your ssh account on the
-relevant services (github.com/gitlab.inria.fr/etc...).
-
 ### Usage
+sofa-spm use ssh based authentication to access the plugin respositories so you need to have configured your ssh 
+account on the relevant services (github.com/gitlab.inria.fr/etc...).
+
 It is possible to get a list of the available plugins with the *list* command:
 ```console
 dmarchal@dmarchal-Precision-7520:~/projects/DEFROST/dev/spm/test$ ../src/spm.py list
@@ -27,6 +26,9 @@ dmarchal@dmarchal-Precision-7520:~/projects/DEFROST/dev/spm/test$ ../src/spm.py 
       BeamAdapter.sp
       SoftRobots.sp
       sofa-shells.sp
+  Defrost/Robots:
+      Echelon3.sp
+      SOFIA.sp
   Consortium:
       HighOrder.sp
       SofaQtQuick.sp
