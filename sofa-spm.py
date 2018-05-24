@@ -10,9 +10,10 @@ import shutil
 import difflib
 import textwrap
 import subprocess
+import spm.repo
 from git import Repo
 
-dbpath = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)),"recipes/"))
+dbpath = spm.repo.location
 
 def loadPluginsEntries(dbpath):
         ### Import the database 
@@ -55,6 +56,7 @@ def searchInPluginsEntries(pluginsname, query):
                              allwords.append(plugin["package_name"])
                              allwords = allwords + plugin["components"]
                              allwords = allwords + plugin["prefabs"]
+                             allwords = allwords + [(location + "/" + plugin["package_name"])]
                         else:
                              allwords = []
                 
@@ -66,12 +68,12 @@ def searchInPluginsEntries(pluginsname, query):
         return (matches, closematches)
      
 def installPlugin(name, tgtpath="./"):
-        dstpath = os.path.join(tgtpath, name)
+        desc = loadPluginDesc(dbpath, name)        
+        dstpath = os.path.join(tgtpath, desc["package_name"])
         print(" - installing '"+name+"' (destination path "+tgtpath)+")" 
         if os.path.exists(dstpath):
                 print("   a file named '"+name+" already exits (skipping install).'")
         else: 
-                desc = loadPluginDesc(dbpath, name)
                 if desc == None:
                         print("   there is no plugin named '"+name+" in the recipes (skipping this one)'")
                         return 
@@ -87,7 +89,12 @@ def installPlugin(name, tgtpath="./"):
         subprocess.call(["mu", "register", dstpath])
 
 def getPluginSources(dbpath):
-        return os.listdir(dbpath)
+        sources=[]
+        for (basedir, dirs, files) in os.walk(dbpath):
+                sources.append(dirs)
+                sources.append(os.path.relpath(basedir, dbpath))
+        print("SS" +str(sources))
+        return sources
 
 def listPlugins(path, source=None):
         lastgroup = ""
