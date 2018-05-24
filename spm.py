@@ -19,14 +19,16 @@ def loadPluginsEntries(dbpath):
         allfilenames = [] 
         for (basepath, dirnames, filenames) in os.walk(dbpath):
                 for f in filenames:
-                        absname = os.path.join(basepath, f)		
-                        allfilenames.append((f, absname))
+                        absname = os.path.join(basepath, f)
+                        location = os.path.relpath(basepath, dbpath)
+                        allfilenames.append((f, absname, location))
         return allfilenames
 
 def loadPluginDesc(dbpath, pluginname):
-        for sd in os.listdir(dbpath):               
-                path = os.path.join(os.path.join(dbpath, sd), pluginname+".sp")
-                if os.path.exists(path):        
+        ### Try to load manually the plugin
+        for (base, dirs, files) in os.walk(dbpath):
+                path = os.path.join(base, pluginname+".sp")
+                if os.path.exists(path):
                         return json.loads(open(path).read())
         return None
         
@@ -34,7 +36,7 @@ def searchInPluginsEntries(pluginsname, query):
         matches = []
         closematches = []
         allwords = []
-        for (name, path) in pluginsname:
+        for (name, path, location) in pluginsname:
                 try:
                         plugin = json.loads(open(path).read())
                 except:
@@ -88,18 +90,20 @@ def getPluginSources(dbpath):
         return os.listdir(dbpath)
 
 def listPlugins(path, source=None):
+        lastgroup = ""
         if source == None:
-                for p in os.listdir(dbpath):
-                        print("  "+p+":")
-                        for j in os.listdir(os.path.join(dbpath, p)):
-                                print("      "+j)
+                entries = loadPluginsEntries(path)
+                for e in entries:
+                        if lastgroup != e[2]:
+                                lastgroup = e[2]
+                                print(e[2]+":")
+                        print("   " +str(e[0]))
                 return 
-        
+        entries = loadPluginsEntries(os.path.join(dbpath, source))
         print("  "+source+":")
-        for j in os.listdir(os.path.join(dbpath, source)):
-                print("      "+j)
-
-        
+        for e in entries:
+                print("TT" +str(e))
+        return
 
 def scanPluginsInDir(path):
         plugins = []
