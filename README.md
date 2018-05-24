@@ -11,8 +11,8 @@ You can install sofa-spm by simply using pip and by typing:
    pip install sofa-spm
 ```
 
-At this point you can already start using sofa-spm, but it is recommended to retrieve the most recent list of 
-sofa packages available. This can be done by typing:
+At this point it is recommended to retrieve the most recent list of sofa packages available. 
+This can be done by typing:
 ```console
    sofa-spm.py upgrade
 ```
