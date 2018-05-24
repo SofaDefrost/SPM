@@ -11,10 +11,63 @@ import difflib
 import textwrap
 import subprocess
 import spm.repo
+import appdirs
+import requests
+import io
+import shutil
+import zipfile
 from git import Repo
 
-dbpath = spm.repo.location
+def download_extract_zip(url, destpath):
+        """
+        Download a ZIP file and extract its contents in memory
+        yields (filename, file-like object) pairs
+        """
+        response = requests.get(url)
+        with zipfile.ZipFile(io.BytesIO(response.content)) as thezip:
+            thezip.extractall(destpath)
+            return thezip.namelist()[0]
+                        
+        raise Exception("Unable to fetch data from "+url)
 
+userdblocation = os.path.join(appdirs.user_data_dir("sofa-spm", "Sofa"), "recipes")
+
+if not os.path.exists(userdblocation):
+        dbpath = spm.repo.location
+else:
+        dbpath = userdblocation
+
+def upgrade():
+        cachelocation = appdirs.user_data_dir("sofa-spm", "Sofa")
+        configlocation = appdirs.user_config_dir("sofa-spm", "Sofa")
+        configfile = os.path.join(configlocation, "sources.json")
+        print("Package source config location: "+configlocation) 
+        print("Package cache location: "+cachelocation)
+        
+        if not os.path.exists(configlocation):
+                os.makedirs(configlocation)
+        
+        if not os.path.exists(configfile):
+                db = {"Main" : "https://github.com/SofaDefrost/SPM-RECIPES/archive/master.zip"} 
+                f = open(configfile,"wt")
+                f.write(json.dumps(db))
+                f.close() 
+        
+        sources = json.loads(open(configfile).read())
+       
+        dblocation = os.path.join(appdirs.user_data_dir("sofa-spm", "Sofa"), "recipes")
+        for sourcename in sources:
+                repo = sources[sourcename]
+                
+                print("Fetching new recipes for '"+sourcename+"' from: "+repo)                
+                dirname = download_extract_zip(repo, dblocation)
+                
+                if os.path.exists(os.path.join(dblocation, sourcename)):
+                        shutil.rmtree(os.path.join(dblocation, sourcename))
+                shutil.move(os.path.join(dblocation, dirname), os.path.join(dblocation, sourcename))
+                print("Done. ")
+                
+ 
 def loadPluginsEntries(dbpath):
         ### Import the database 
         allfilenames = [] 
@@ -33,7 +86,7 @@ def loadPluginDesc(dbpath, pluginname):
                         return json.loads(open(path).read())
         return None
         
-def searchInPluginsEntries(pluginsname, query):
+def searchInPluginsEntries(pluginsname, query, full=False):
         matches = []
         closematches = []
         allwords = []
@@ -60,7 +113,7 @@ def searchInPluginsEntries(pluginsname, query):
                         else:
                              allwords = []
                 
-        if len(matches) == 0:
+        if full or len(matches) == 0:
                 ## Do a close search...  
                 allwords += getPluginSources(dbpath)
                 closematches = difflib.get_close_matches(query, allwords)
@@ -91,27 +144,26 @@ def installPlugin(name, tgtpath="./"):
 def getPluginSources(dbpath):
         sources=[]
         for (basedir, dirs, files) in os.walk(dbpath):
-                sources.append(dirs)
-                sources.append(os.path.relpath(basedir, dbpath))
-        print("SS" +str(sources))
+                if len(dirs) != 0:
+                        sources.append(os.path.relpath(basedir, dbpath))
         return sources
 
 def listPlugins(path, source=None):
         lastgroup = ""
-        if source == None:
-                entries = loadPluginsEntries(path)
-                for e in entries:
-                        if lastgroup != e[2]:
-                                lastgroup = e[2]
-                                print(e[2]+":")
-                        print("   " +str(e[0]))
-                return 
-        entries = loadPluginsEntries(os.path.join(dbpath, source))
-        print("  "+source+":")
+        prefix = ""
+        if source != None:
+                path = os.path.join(dbpath, source)
+                prefix = source
+        entries = loadPluginsEntries(path)
         for e in entries:
-                print("TT" +str(e))
-        return
-
+                if lastgroup != e[2]:
+                        lastgroup = e[2]
+                        print(os.path.join(prefix,e[2])+":")
+                print("   " +str(e[0]))
+        if len(entries) == 0:
+                searchFor(source, True)
+        return 
+        
 def scanPluginsInDir(path):
         plugins = []
         pluginsWithDesc = []
@@ -167,6 +219,12 @@ def computeDependencies(name, alreadyProcessed=[]):
                 deps.append(str(dep))                        
         return deps
 
+def printPackage(desc):
+        wraps = textwrap.wrap(desc["description"], 80)
+        print('  {:<30}  {:<30}'.format(desc["package_name"], wraps[0]))
+        for extralines in wraps[1:]:
+                print('  {:<30}  {:<30}'.format("", extralines))
+
 def infoFor(query):
         print("Info for: "+query)
         if query in os.listdir(dbpath):
@@ -175,12 +233,13 @@ def infoFor(query):
         
         desc = loadPluginDesc(dbpath, query)
         if desc != None:
-                print("    "+query+" is "+desc["description"]+". To install this plugin you can type 'spm install "+query+"'")
+                printPackage(desc)                
+                print('  {:<30}  {:<30}'.format("", "(to install this package type 'spm install "+query+"')"))
 
-def searchFor(query):
+def searchFor(query, full=False):
         pluginsEntries = loadPluginsEntries(dbpath)
  
-        (matches, closematches) = searchInPluginsEntries(pluginsEntries, query)
+        (matches, closematches) = searchInPluginsEntries(pluginsEntries, query, full)
         if len(matches) != 0:
                 print("- searching for '"+query+"' in "+str(len(pluginsEntries))+" plugins descriptions. Found:")
                 
@@ -197,12 +256,14 @@ def searchFor(query):
               
 if len( sys.argv ) < 2:
         print("The Sofa Package Manager, invalid command line.")
-        print("USAGE: spm [list|search|info|install|] name1 <name2> <name3>")
+        print("USAGE: spm [list|search|info|install|upgrade] <name1> <name2> <name3>")
         sys.exit(0)
 
+print("The Sofa Package Manager")
+print("")
+
 if sys.argv[1] == "search":
-        print("The Sofa Package Manager")
-        searchFor(sys.argv[2])
+        searchFor(sys.argv[2], True)
 
 elif sys.argv[1] == "list":   
         if len(sys.argv) == 2:
@@ -212,9 +273,12 @@ elif sys.argv[1] == "list":
         
 elif sys.argv[1] == "info":   
         infoFor(sys.argv[2])
-                     
+        
+elif sys.argv[1] == "upgrade":
+        upgrade()
+        sys.exit(0)
+                             
 elif sys.argv[1] == "install":
-        print("The Sofa Package Manager")
         names = sys.argv[2:]
         toInstall = []
         
@@ -223,7 +287,7 @@ elif sys.argv[1] == "install":
         
                 if pluginsEntries == None:
                         print("- unable to open a plugin named '"+name+"' (falling back to search mode)") 
-                        searchFor(name)
+                        searchFor(name, True)
                         sys.exit(0)
                 else:
                         depsToInstall = computeDependencies(name)+[name]
@@ -236,3 +300,10 @@ elif sys.argv[1] == "install":
                 for dep in toInstall:
                         installPlugin(dep)
                 generateCMakeList()
+                
+if dbpath == spm.repo.location:
+        print("")
+        print("Notes:")
+        print(" You are using the default repository which may be out of date. ")
+        print(" Please consider upgrading the packages description by typing sofa-spm.py upgrade")
+
