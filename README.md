@@ -1,9 +1,10 @@
 ## sofa-spm: Sofa Package Manager.
 Tired of installing Sofa plugin manually or locate which component is in which plugin ? Try sofa-spm.
 
-sofa-spm is a small tool to search for plugins or components & install them with their dependencies  
-with as few as possible steps. 
+sofa-spm is a small tool to search for sofa plugins or components & install them with their dependencies
+with as few as possible steps.
 
+WARNING: the last version allows the installation of binary version of Sofa & Plugins, this is highly experimental so for the moment, trying to install -bin- packages have a big chance to just fail. 
 
 ### Install
 sofa-spm can now simply be installed using pip by typing
@@ -29,9 +30,16 @@ dmarchal@dmarchal-Precision-7520:~/projects/DEFROST/dev/spm/test$ ../src/spm.py 
   Defrost/Robots:
       Echelon3.sp
       SOFIA.sp
+  Defrost/bin
+      SoftRobots-bin.sp
+      SoftRobots-bin-17_12.sp
+      SoftRobots.Inverse-bin
+      SoftRobots.Inverse-bin-17_12.sp
   Consortium:
       HighOrder.sp
       SofaQtQuick.sp
+      Sofa-bin.sp
+      Sofa-bin-17_12.sp
   Mimesis:
       DepthSense.sp
       Meshless.sp
