@@ -192,8 +192,19 @@ def installPlugin(name, tgtpath="./"):
                                 return 
                 elif desc["package_type"] == "binary":
                         if len(desc["http-url"]) != 0:
-                                print("   getting file from: " + desc["http-url"])
-                                download_extract_zip(desc["http-url"], dstpath, withPerm=True)
+                                import re
+                                url = desc["http-url"]
+                                r = re.search("\$OAUTH\{(.*)\}", url)
+                                if r:
+                                        tokenID = r.groups()[0]
+                                        tokens = loadTokens()
+                                        if tokenID not in tokens:
+                                                print("This URL requires an authentication token for "+str(tokenID)+" which is missing. (try sofa-spm.py token list)")
+                                        else:
+                                                value = tokens[tokenID] 
+                                                url = re.sub("\$OAUTH\{.*\}", value, url)                                       
+                                print("   getting file from: " + url)
+                                download_extract_zip(url, dstpath, withPerm=True)
                         else:
                                 print("   there is no archive file to download for '"+name+" (skipping this package)'")
                                 return
@@ -316,13 +327,45 @@ def searchFor(query, full=False):
                 for value in closematches:
                         print("  {:<30}   (get details by typing: 'spm info {:<}')".format(value,value))
               
-if len( sys.argv ) < 2:
-        print("The Sofa Package Manager, invalid command line.")
-        print("USAGE: spm [list|search|info|install|upgrade] <name1> <name2> <name3>")
-        sys.exit(0)
+def loadTokens():
+        configlocation = appdirs.user_config_dir("sofa-spm", "Sofa")
+        tokenfile = os.path.join(configlocation, "accesstokens.json")
+        if not os.path.exists(tokenfile):
+                with open(tokenfile,"wt") as f:
+                        print("Initializing token file at:" + tokenfile)
+                        f.write(json.dumps({}))
+        
+        return json.loads(open(tokenfile,"r").read())
+
+def saveTokens(t):
+        configlocation = appdirs.user_config_dir("sofa-spm", "Sofa")
+        tokenfile = os.path.join(configlocation, "accesstokens.json")
+        with open(tokenfile,"w") as f:
+                f.write(json.dumps(t))
+
+def addToken(key, value):
+        t = loadTokens()
+        t[key] = value
+        saveTokens(t)
+
+
+def printUsage():
+        print("USAGE: sofa-spm <cmd> <cmd-args>")
+        print("  list                     print the list of all the available packages.")        
+        print("  search <string>          search for <string> in the packages lists & description.")        
+        print("  info <name>              print the package description.")        
+        print("  install <name> <name2>   install the requested packages & their dependencies.")        
+        print("  upgrade                  get a more recent version of the available packages from")
+        print("                          the different registered packages sources.")        
+        print("  token list               print the list of registerd OAuth token to access private repository.")
+        print("  token add <ID> <VAL>     add a new token for entry 'ID' with value 'VAL'.")
+
 
 print("The Sofa Package Manager")
-print("")
+
+if len( sys.argv ) < 2:
+        printUsage()
+        sys.exit(0)
 
 if sys.argv[1] == "search":
         searchFor(sys.argv[2], True)
@@ -363,12 +406,43 @@ elif sys.argv[1] == "install":
                         installPlugin(dep)
                 generateCMakeList()
 
+elif sys.argv[1] == "help":
+        printUsage()
+        sys.exit(0)
+        
 elif sys.argv[1] == "update-imports":
         name = sys.argv[2]
         desc = loadPluginDesc("./", name)
         print("This project needs :"+str(desc["package_dependencies"]))
-        #c = computeDependencies(name)        
-                
+
+elif sys.argv[1] == "token":       
+        if len(sys.argv) <3:
+                print("Invalid (token) command.")
+                print("USAGE: spm token <list|add> ")
+                sys.exit(0)
+
+        if sys.argv[2] == "list":
+                if len(sys.argv) <3:
+                        print("Invalid (token list) command line.")
+                        print("USAGE: spm token list")
+                        sys.exit(0)
+                tokens = loadTokens()
+                print("Your access tokens: ")
+                for tk in tokens:
+                      print("  "+tk+" : "+tokens[tk])  
+        elif sys.argv[2] == "add":
+                if len(sys.argv) != 5:
+                        print("Invalid (token add) command line.")
+                        print("USAGE: spm token add <name> <token>")
+                        sys.exit(0)
+                        
+                token_name = sys.argv[3] 
+                token_value = sys.argv[4]
+                addToken(token_name, token_value)
+                print("Adding token "+token_name+" : "+token_value+" to database.")
+else:
+        printUsage()
+                        
 if dbpath == spm.repo.location:
         print("")
         print("Notes:")
