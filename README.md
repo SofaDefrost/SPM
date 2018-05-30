@@ -7,9 +7,15 @@ with as few as possible steps.
 WARNING: the last version allows the installation of binary version of Sofa & Plugins, this is highly experimental so for the moment, trying to install -bin- packages have a big chance to just fail. 
 
 ### Install
-sofa-spm can now simply be installed using pip by typing
+You can install sofa-spm by simply using pip and by typing:
 ```console
    pip install sofa-spm
+```
+
+At this point it is recommended to retrieve the most recent list of sofa packages available. 
+This can be done by typing:
+```console
+   sofa-spm.py upgrade
 ```
 
 ### Usage
@@ -18,7 +24,7 @@ account on the relevant services (github.com/gitlab.inria.fr/etc...).
 
 It is possible to get a list of the available plugins with the *list* command:
 ```console
-dmarchal@dmarchal-Precision-7520:~/projects/DEFROST/dev/spm/test$ ../src/spm.py list
+dmarchal@dmarchal-Precision-7520:~/projects/DEFROST/dev/spm/test$ sofa-spm.py list
  Defrost:
       ModelOrderReduction.sp
       SoftRobots.Inverse.sp
@@ -48,7 +54,7 @@ dmarchal@dmarchal-Precision-7520:~/projects/DEFROST/dev/spm/test$ ../src/spm.py 
 
 You can also search for plugins which contains specific components with the *search* command:
 ```console
-dmarchal@dmarchal-Precision-7520:~/projects/DEFROST/dev/spm/test$ ../src/spm.py search CableActuator
+dmarchal@dmarchal-Precision-7520:~/projects/DEFROST/dev/spm/test$ sofa-spm.py search CableActuator
 The Sofa Package Manager
 - searching for 'CableActuator' in 7 plugins descriptions. Found:
   SoftRobots                      A plugin dedicated to SoftRobotics.
@@ -57,7 +63,7 @@ The Sofa Package Manager
 In case no exact matches are found for the *search* command an approximated search is performed which provides 
 you suggestions:
 ```console
-dmarchal@dmarchal-Precision-7520:~/projects/DEFROST/dev/spm/test$ ../src/spm.py search CableActutor
+dmarchal@dmarchal-Precision-7520:~/projects/DEFROST/dev/spm/test$ sofa-spm.py search CableActutor
 The Sofa Package Manager
 - searching for 'CableActutor' in 7 plugins descriptions. No exact match...but I found:
   CableActuator                    (get details by typing: 'spm search CableActuator')
@@ -65,7 +71,7 @@ The Sofa Package Manager
 
 Finally, when you have found the plugins you want to install you can use the *install* command:
 ```console
-dmarchal@dmarchal-Precision-7520:~/projects/DEFROST/dev/spm/test$ ../src/spm.py install SofaQtQuick SoftRobots.Inverse 
+dmarchal@dmarchal-Precision-7520:~/projects/DEFROST/dev/spm/test$ sofa-spm.py install SofaQtQuick SoftRobots.Inverse 
 The Sofa Package Manager
 - instal list is ['SofaQtQuick', 'STLIB', 'SoftRobots', 'SoftRobots.Inverse']
  - installing 'SofaQtQuick' (destination path ./)
@@ -92,9 +98,8 @@ The install command also:
 - generates a dependency friendly ordered CMakeLists.txt for direct integration in you SOFA_EXTERNAL_PLUGINS_DIRECTORY. 
 - configure the plugins repository to be used with mu-repo (http://fabioz.github.io/mu-repo/).
 
+
 ## How to contribute & TODO
 - Reports problems,
 - Make PR to add your plugins into the plugin database. 
-- Make PR to add a system to automatically update a plugin entry from the actual content of a plugin so that it is 
-  always synchronized. 
 - Make suggestions on how to handle stuff like other remotes, binary distribution of plugins, private plugin management...
