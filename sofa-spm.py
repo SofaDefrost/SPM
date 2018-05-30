@@ -14,17 +14,69 @@ import spm.repo
 import appdirs
 import requests
 import io
+import platform
 import shutil
 import zipfile
+from zipfile import *
 from git import Repo
 
-def download_extract_zip(url, destpath):
+def extract(self, member, path=None, pwd=None):
+    """Extract a member from the archive to the current working directory,
+       using its full name. Its file information is extracted as accurately
+       as possible. `member' may be a filename or a ZipInfo object. You can
+       specify a different directory using `path'.
+    """
+    if not isinstance(member, ZipInfo):
+        member = self.getinfo(member)
+
+    if path is None:
+        path = os.getcwd()
+
+    return self._extract_member(member, path, pwd)
+
+class MyZipFile(zipfile.ZipFile):
+    def __init__(self, o, withPerm=False):
+        super(MyZipFile, self).__init__(o)
+        self.withPerm = withPerm
+
+    def extract(self, member, path=None, pwd=None):
+        if not isinstance(member, ZipInfo):
+            member = self.getinfo(member)
+
+        if path is None:
+            path = os.path.abspath(os.getcwd())
+        path=os.path.abspath(path)
+        ret_val = self._extract_member(member, path, pwd)
+
+        if not self.withPerm:
+                return ret_val
+
+        if platform.system() == "Linux":
+                if member.external_attr >> (32-4) == 10:
+                        print("SYMLINK: "+path +"/"+member.filename)
+                        floc = os.path.join(path, member.filename)
+                        with open(floc, "r") as f:
+                                target = f.read()
+                                target = os.path.join(os.path.dirname(floc), target)
+                        
+                        os.unlink(floc)
+                        os.symlink(target, floc)                        
+                else:        
+                        attr = member.external_attr >> 16
+                        os.chmod(ret_val, attr)
+        else:
+                raise Exception("Binary packages are not yet on "+platform.system())
+        
+        return ret_val
+
+    
+def download_extract_zip(url, destpath, withPerm=False):
         """
         Download a ZIP file and extract its contents in memory
         yields (filename, file-like object) pairs
         """
         response = requests.get(url)
-        with zipfile.ZipFile(io.BytesIO(response.content)) as thezip:
+        with MyZipFile(io.BytesIO(response.content), withPerm) as thezip:
             thezip.extractall(destpath)
             return thezip.namelist()[0]
                         
@@ -60,7 +112,7 @@ def upgrade():
                 repo = sources[sourcename]
                 
                 print("Fetching new recipes for '"+sourcename+"' from: "+repo)                
-                dirname = download_extract_zip(repo, dblocation)
+                dirname = download_extract_zip(repo, dblocation, withPerm=False)
                 
                 if os.path.exists(os.path.join(dblocation, sourcename)):
                         shutil.rmtree(os.path.join(dblocation, sourcename))
@@ -129,15 +181,25 @@ def installPlugin(name, tgtpath="./"):
         else: 
                 if desc == None:
                         print("   there is no plugin named '"+name+" in the recipes (skipping this one)'")
+                        return
+                if desc["package_type"] == "source":         
+                        if len(desc["ssh-url"]) != 0:
+                                print("   cloning from: " + desc["ssh-url"])
+                                re = Repo.clone_from(desc["ssh-url"], to_path=dstpath)
+                                re.remotes["origin"].rename("upstream")
+                        else:
+                                print("   there is no git repository configured for '"+name+" (skipping this package)'")
+                                return 
+                elif desc["package_type"] == "binary":
+                        if len(desc["http-url"]) != 0:
+                                print("   getting file from: " + desc["http-url"])
+                                download_extract_zip(desc["http-url"], dstpath, withPerm=True)
+                        else:
+                                print("   there is no archive file to download for '"+name+" (skipping this package)'")
+                                return
+                elif desc["package_type"] == "meta":
                         return 
-                if len(desc["ssh-url"]) != 0:
-                        print("   cloning from: " + desc["ssh-url"])
-                        re = Repo.clone_from(desc["ssh-url"], to_path=dstpath)
-                        re.remotes["origin"].rename("upstream")
-                else:
-                        print("   there is no git repository configured for '"+name+" (skipping this plugin)'")
-                        return 
-                
+                                            
         ## Register to mu-repo
         subprocess.call(["mu", "register", dstpath])
 
@@ -300,6 +362,12 @@ elif sys.argv[1] == "install":
                 for dep in toInstall:
                         installPlugin(dep)
                 generateCMakeList()
+
+elif sys.argv[1] == "update-imports":
+        name = sys.argv[2]
+        desc = loadPluginDesc("./", name)
+        print("This project needs :"+str(desc["package_dependencies"]))
+        #c = computeDependencies(name)        
                 
 if dbpath == spm.repo.location:
         print("")
