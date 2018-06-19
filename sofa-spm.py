@@ -75,12 +75,14 @@ def download_extract_zip(url, destpath, withPerm=False):
         Download a ZIP file and extract its contents in memory
         yields (filename, file-like object) pairs
         """
-        response = requests.get(url)
-        with MyZipFile(io.BytesIO(response.content), withPerm) as thezip:
-            thezip.extractall(destpath)
-            return thezip.namelist()[0]
-                        
-        raise Exception("Unable to fetch data from "+url)
+        try:
+                response = requests.get(url)
+                with MyZipFile(io.BytesIO(response.content), withPerm) as thezip:
+                    thezip.extractall(destpath)
+                    return thezip.namelist()[0]
+        except:
+                pass                
+        raise Exception("Unable to fetch data from "+url+" this may be an authentication issue")
 
 userdblocation = os.path.join(appdirs.user_data_dir("sofa-spm", "Sofa"), "recipes")
 
@@ -182,12 +184,34 @@ def installPlugin(name, tgtpath="./"):
                 if desc == None:
                         print("   there is no plugin named '"+name+" in the recipes (skipping this one)'")
                         return
+                        
                 if desc["package_type"] == "source":         
-                        if len(desc["ssh-url"]) != 0:
+                        done=False
+                        try:
                                 print("   cloning from: " + desc["ssh-url"])
                                 re = Repo.clone_from(desc["ssh-url"], to_path=dstpath)
                                 re.remotes["origin"].rename("upstream")
-                        else:
+                                done=True
+                        except:
+                                pass
+                        
+                        if not done:
+                                print("   cloning using ssh did not worked, trying using http protocol") 
+                                import re
+                                url = desc["http-url"]
+                                r = re.search("\$OAUTH\{(.*)\}", url)
+                                if r:
+                                        tokenID = r.groups()[0]
+                                        tokens = loadTokens()
+                                        if tokenID not in tokens:
+                                                print("     The HTTP URL requires an authentication token for '"+str(tokenID)+"' which is missing. (try sofa-spm.py token list)")
+                                                return
+                                        else:
+                                                value = tokens[tokenID] 
+                                                url = re.sub("\$OAUTH\{.*\}", value, url)                                       
+                                print("   getting file from: " + url)
+                                download_extract_zip(url, dstpath, withPerm=True)
+                        if not done:        
                                 print("   there is no git repository configured for '"+name+" (skipping this package)'")
                                 return 
                 elif desc["package_type"] == "binary":
@@ -200,6 +224,7 @@ def installPlugin(name, tgtpath="./"):
                                         tokens = loadTokens()
                                         if tokenID not in tokens:
                                                 print("This URL requires an authentication token for "+str(tokenID)+" which is missing. (try sofa-spm.py token list)")
+                                                return
                                         else:
                                                 value = tokens[tokenID] 
                                                 url = re.sub("\$OAUTH\{.*\}", value, url)                                       
