@@ -4,8 +4,6 @@ Tired of installing Sofa plugin manually or locate which component is in which p
 sofa-spm is a small tool to search for sofa plugins or components & install them with their dependencies
 with as few as possible steps.
 
-WARNING: the last version allows the installation of binary version of Sofa & Plugins, this is highly experimental so for the moment, trying to install -bin- packages have a big chance to just fail. 
-
 ### Install
 You can install sofa-spm by simply using pip and by typing:
 ```console
